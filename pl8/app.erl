@@ -2,15 +2,16 @@
 -export([run/0]).
 
 run() -> 
-    runner(fun square/1, "square", 2),
-    runner(fun temp_convert/1, "convert fahrenheit to celcius", 212),
-    runner(fun factorial/1, "factorial", 5),
-    runner(fun fib/1, "fib", 12),
-    runner(fun count/1, "count", [1,3,34,1]).
+    runner(fun() -> square(2) end, "square"),
+    runner(fun() -> temp_convert(212) end, "fahrenheit to celcius"),
+    runner(fun() -> factorial(5) end , "factorial"),
+    runner(fun() -> fib(12) end, "fib"),
+    runner(fun() -> count([1,3,34,1]) end , "count"),
+    runner(fun() -> member([1,3,34,1],7) end, "member").
 
-runner(Function, FunctionName, Argument) ->
+runner(Function, FunctionName) ->
     io:fwrite("~s~n",[FunctionName]),
-    R = Function(Argument),
+    R = Function(),
     io:fwrite("~w~n", [R]).
 
 square(N) ->
@@ -30,3 +31,15 @@ fib(N) ->
 
 count([]) -> 0;
 count([_|T]) -> 1 + count(T).
+
+member([], _) -> false;
+member([H|_], N) when H == N -> true;
+member([H|T], N) -> member(T, N).
+
+
+
+
+
+
+
+
