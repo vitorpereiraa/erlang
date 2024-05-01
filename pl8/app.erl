@@ -7,7 +7,9 @@ run() ->
     runner(fun() -> factorial(5) end , "factorial"),
     runner(fun() -> fib(12) end, "fib"),
     runner(fun() -> count([1,3,34,1]) end , "count"),
-    runner(fun() -> member([1,3,34,1],7) end, "member").
+    runner(fun() -> member([1,3,34,1],7) end, "member"),
+    runner(fun() -> delete([1,3,34,1],3) end, "delete"),
+    runner(fun() -> deleteTailRecursive([1,3,34,1],3,[]) end, "deleteTailRecursive").
 
 runner(Function, FunctionName) ->
     io:fwrite("~s~n",[FunctionName]),
@@ -34,8 +36,15 @@ count([_|T]) -> 1 + count(T).
 
 member([], _) -> false;
 member([H|_], N) when H == N -> true;
-member([H|T], N) -> member(T, N).
+member([_|T], N) -> member(T, N).
 
+delete([], _) -> [];
+delete([H|T], ToDelete) when H == ToDelete -> [] ++ delete(T, ToDelete);
+delete([H|T], ToDelete) -> [H] ++ delete(T,ToDelete).
+
+deleteTailRecursive([], _, R) -> R;
+deleteTailRecursive([H|T], ToDelete, L) when H == ToDelete -> deleteTailRecursive(T, ToDelete, L);
+deleteTailRecursive([H|T], ToDelete,L ) -> deleteTailRecursive(T,ToDelete, [H] ++ L).
 
 
 
