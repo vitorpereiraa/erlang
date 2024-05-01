@@ -9,7 +9,8 @@ run() ->
     runner(fun() -> count([1,3,34,1]) end , "count"),
     runner(fun() -> member([1,3,34,1],7) end, "member"),
     runner(fun() -> delete([1,3,34,1],3) end, "delete"),
-    runner(fun() -> deleteTailRecursive([1,3,34,1],3,[]) end, "deleteTailRecursive").
+    runner(fun() -> deleteTailRecursive([1,3,34,1],3,[]) end, "deleteTailRecursive"),
+    runner(fun() -> reverse([1,3,34,1]) end, "reverse").
 
 runner(Function, FunctionName) ->
     io:fwrite("~s~n",[FunctionName]),
@@ -46,7 +47,8 @@ deleteTailRecursive([], _, R) -> R;
 deleteTailRecursive([H|T], ToDelete, L) when H == ToDelete -> deleteTailRecursive(T, ToDelete, L);
 deleteTailRecursive([H|T], ToDelete,L ) -> deleteTailRecursive(T,ToDelete, [H] ++ L).
 
-
+reverse([]) -> [];
+reverse([H|T]) -> reverse(T) ++ [H].
 
 
 
