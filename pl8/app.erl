@@ -11,7 +11,8 @@ run() ->
     runner(fun() -> delete([1,3,34,1],3) end, "delete"),
     runner(fun() -> deleteTailRecursive([1,3,34,1],3,[]) end, "deleteTailRecursive"),
     runner(fun() -> reverse([1,3,34,1]) end, "reverse"),
-    runner(fun() -> average([1,2,3,4,5]) end, "average").
+    runner(fun() -> average([1,2,3,4,5]) end, "average"),
+    runner(fun() -> sum_max([1,2,7,4,5], [1,2,3,4,5]) end, "sum_max").
 
 runner(Function, FunctionName) ->
     io:fwrite("~s~n",[FunctionName]),
@@ -55,6 +56,14 @@ sum([]) -> 0;
 sum([H|T]) -> H + sum(T).
 
 average(L) -> sum(L)/count(L).
+
+max(L) -> max(L, 0). 
+
+max([], MAX) -> MAX; 
+max([H|T], MAX) when H > MAX -> max(T, H); 
+max([_|T], MAX) -> max(T, MAX). 
+
+sum_max(L1, L2) -> max(L1) + max(L2).
 
 
 
