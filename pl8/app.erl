@@ -5,7 +5,8 @@ run() ->
     runner(fun square/1, "square", 2),
     runner(fun temp_convert/1, "convert fahrenheit to celcius", 212),
     runner(fun factorial/1, "factorial", 5),
-    runner(fun fib/1, "fib", 12).
+    runner(fun fib/1, "fib", 12),
+    runner(fun count/1, "count", [1,3,34,1]).
 
 runner(Function, FunctionName, Argument) ->
     io:fwrite("~s~n",[FunctionName]),
@@ -18,12 +19,14 @@ square(N) ->
 temp_convert(F) -> 
     (5/9)*(F-32).
 
-factorial(0) -> 
-    1;
+factorial(0) -> 1;
 factorial(N) -> 
     N * factorial(N-1).
 
 fib(0) -> 0;
 fib(1) -> 1;
-fib(N) ->
+fib(N) -> 
     fib(N-1) + fib(N-2).
+
+count([]) -> 0;
+count([_|T]) -> 1 + count(T).
