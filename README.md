@@ -1,4 +1,3 @@
-Erlang exercises from Multicore and Distributed Systems course.
+# Erlang exercises from a Multicore and Distributed Systems course.
 
-Use make to run modules:
-> make run
+Use `make run` to run the erlang modules.
