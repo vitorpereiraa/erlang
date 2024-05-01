@@ -10,7 +10,8 @@ run() ->
     runner(fun() -> member([1,3,34,1],7) end, "member"),
     runner(fun() -> delete([1,3,34,1],3) end, "delete"),
     runner(fun() -> deleteTailRecursive([1,3,34,1],3,[]) end, "deleteTailRecursive"),
-    runner(fun() -> reverse([1,3,34,1]) end, "reverse").
+    runner(fun() -> reverse([1,3,34,1]) end, "reverse"),
+    runner(fun() -> average([1,2,3,4,5]) end, "average").
 
 runner(Function, FunctionName) ->
     io:fwrite("~s~n",[FunctionName]),
@@ -50,6 +51,10 @@ deleteTailRecursive([H|T], ToDelete,L ) -> deleteTailRecursive(T,ToDelete, [H] +
 reverse([]) -> [];
 reverse([H|T]) -> reverse(T) ++ [H].
 
+sum([]) -> 0;
+sum([H|T]) -> H + sum(T).
+
+average(L) -> sum(L)/count(L).
 
 
 
