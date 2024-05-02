@@ -13,7 +13,9 @@ run() ->
     runner(fun() -> reverse([1,3,34,1]) end, "reverse"),
     runner(fun() -> average([1,2,3,4,5]) end, "average"),
     runner(fun() -> sum_max([1,2,7,4,5], [1,2,3,4,5]) end, "sum_max"),
-    runner(fun() -> int([1,2.7,6.4,4,5]) end, "int").
+    runner(fun() -> int([1,2.7,6.4,4,5]) end, "int"),
+    Grades = [{"Kyrie",19}, {"Luka",20}, {"Edwards",20}, {"KD",9}, {"Lebron",6}],
+    runner(fun() -> grades(Grades) end, "grades").
 
 runner(Function, FunctionName) ->
     io:fwrite("~s~n",[FunctionName]),
@@ -78,4 +80,25 @@ int([H|T]) when is_float(H) ->
         false -> [round(H)] ++ int(T)
     end.
 
+
+% Grades = [{"Kyrie",19}, {"Luka",20}, {"Edwards",20}, {"KD",9}, {"Lebron",6}].
+% average score of all students
+% the name and grade of the student with the highest score
+% the name and grade of the student with the lowest score.
+grades(Grades) -> 
+    Scores = [X || {_, X} <- Grades],
+    Avg = average(Scores),
+    Max = max(Scores),
+    Min = lists:min(Scores),
+    StudentsWithHighestScore = students_with_score(Grades, Max),
+    StudentsWithLowestScore = students_with_score(Grades, Min),
+    {
+        {average, Avg},
+        {studentsWithHighestScore, StudentsWithHighestScore, Max},
+        {studentsWithLowestScore, StudentsWithLowestScore, Min}
+    }.
+
+students_with_score([], _) -> [];
+students_with_score([{N, S}|T], Score) when S == Score -> [N] ++ students_with_score(T, Score);
+students_with_score([_|T], Score) -> [] ++ students_with_score(T, Score).
 
