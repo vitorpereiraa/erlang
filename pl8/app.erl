@@ -12,7 +12,8 @@ run() ->
     runner(fun() -> deleteTailRecursive([1,3,34,1],3,[]) end, "deleteTailRecursive"),
     runner(fun() -> reverse([1,3,34,1]) end, "reverse"),
     runner(fun() -> average([1,2,3,4,5]) end, "average"),
-    runner(fun() -> sum_max([1,2,7,4,5], [1,2,3,4,5]) end, "sum_max").
+    runner(fun() -> sum_max([1,2,7,4,5], [1,2,3,4,5]) end, "sum_max"),
+    runner(fun() -> int([1,2.7,6.4,4,5]) end, "int").
 
 runner(Function, FunctionName) ->
     io:fwrite("~s~n",[FunctionName]),
@@ -65,6 +66,16 @@ max([_|T], MAX) -> max(T, MAX).
 
 sum_max(L1, L2) -> max(L1) + max(L2).
 
+decimal_part(Number) ->
+    FloatPart = math:floor(Number),
+    Number - FloatPart.
 
+int([]) -> [];
+int([H|T]) when is_integer(H) -> [H] ++ int(T); 
+int([H|T]) when is_float(H) -> 
+    case decimal_part(H) < 0.5 of 
+        true -> [trunc(H)] ++ int(T);
+        false -> [round(H)] ++ int(T)
+    end.
 
 
