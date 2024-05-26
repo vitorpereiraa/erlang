@@ -19,3 +19,7 @@ _checkouts/
 
 ### Erlang Patch ###
 rebar3.crashdump
+
+/practice/*
+/pl9/assignment3/*
+/pl9/assignment4/*
