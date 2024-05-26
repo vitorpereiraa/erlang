@@ -2,22 +2,57 @@
 - export([start/1]).
 
 start([Topic, Router]) -> 
+    ServerPid = spawn(fun() -> start_server(Topic, Router) end),
+    spawn(fun() -> server_monitor(Topic, Router, ServerPid) end).
+
+server_monitor(Topic, Router, ServerPid) ->
+    io:format("Server monitor ~w starting to monitor pid ~w~n", [self(), ServerPid]),
+    process_flag(trap_exit, true),
+    link(ServerPid),
+    receive 
+        {'EXIT', Pid, Reason} ->
+            io:format("Server ~w died because it was ~w~n", [Pid, Reason]),
+            ServerPid = spawn(fun() -> start_server(Topic, Router) end),
+            server_monitor(Topic, Router, ServerPid)
+    end.
+
+start_server(Topic, Router) ->
+    io:format("Server starting with pid ~w~n",[self()]),
     connect_with_router(Router, 3),
     add_server_to_router(Router, Topic),
-    io:format("Server connected with router and starting with topic: ~s~n", [Topic]),
-    register(Topic, self()),
+    process_flag(trap_exit, true),
     listen(Topic, []).
 
 listen(Topic, Clients) -> 
     receive
-        {add_client, Client, ClientName} ->
+        {add_client, Client} ->
+            link(Client),
+            UpdatedClients = [Client|Clients],
             Client ! {self(), ok},
-            listen(Topic, [{Client, ClientName}|Clients]);
+            io:format("Client ~w joined.~n",[Client]),
+            listen(Topic, UpdatedClients);
+
+        {remove_client, Client} ->
+            unlink(Client),
+            UpdatedClients = lists:delete(Client, Clients),
+            Client ! {self(), ok},
+            io:format("Client ~w left.~n",[Client]),
+            listen(Topic, UpdatedClients);
+
+        {list_clients, Client} -> 
+            Client ! {self(), Clients},
+            io:format("List clients request, sent: ~w.~n",[Clients]),
+            listen(Topic, Clients);
 
         {message, Client, ClientName, Message} -> 
-            io:format("[~w ~w] sent '~s'~n", [ClientName, Client, Message]),
-            lists:foreach(fun({C, _}) -> C ! {message, Topic, ClientName, Message} end, Clients),
-            listen(Topic, Clients)
+            io:format("[~w with pid ~w] sent '~s'~n", [ClientName, Client, Message]),
+            lists:foreach(fun(C) -> C ! {message, Topic, ClientName, Message} end, Clients),
+            listen(Topic, Clients);
+
+        {'EXIT', Client, _ } -> 
+            UpdatedClients = lists:delete(Client, Clients),
+            io:format("Client ~w was removed due to exit signal.~n",[Client]),
+            listen(Topic, UpdatedClients)
     end.
 
 add_server_to_router(Router, Topic) ->

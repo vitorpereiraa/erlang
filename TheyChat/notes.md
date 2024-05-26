@@ -1,54 +1,28 @@
 # TheyChat!
 
-## Clients
-
-### Use cases
+### Clients use Cases
 
 * Join Server. ✅ 
-* Leave Server.
-* Send/Receive messages. (Broadcast to server) ✅ 
+* Leave Server. ✅ 
+* Send/Receive messages (Broadcast). ✅ 
 
-## Router
-
-### Use cases
+## Router use cases
 
 * Give the pid of the server to the client upon request. ✅ 
-* Monitor and solve server failures.
+* router
+    * restarts router_monitor when it fails.
+    * restarts server_monitor when it fails.
+* router_monitor 
+    * restarts router when it fails.
+    * restores router state (list of servers).
 
-### State
-
-* List of servers.
-
-### Architecture
-
-router and router_monitor supervise each other, if one fails the other restarts.
-
-router restarts server_monitor in case of failure.
-
-## Server
-
-### Use cases
+## Server use cases
 
 * Clients can chat by sharing messages. ✅ 
-* Fail-safe mechanims.
-
-### State
-
-* Keeps a list of clients.
-
-### Architecture
-
-server_monitor restarts the server_chat in case of failure.
-
-server_chat will remove a client from the client list when the client fails.
-
-## Process Monitors
-
-### Use Cases
-
-* Restart the monitored process in case of failure.
-
-* State backup. Restarts with the state the process had before being killed.
+* Remove client when it fails. ✅ 
+* server_monitor 
+    * restarts the server_chat in case of failure.
+    * restores server_chat state (list of clients).
 
 ## Grading Criteria
 
