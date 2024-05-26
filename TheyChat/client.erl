@@ -9,7 +9,6 @@
 start([ClientName, Router]) ->
     connect_with_router(Router, 3),
     register(ClientName, spawn(fun() -> 
-        process_flag(trap_exit, true), 
         listen(ClientName, Router, []) end)).
     
 listen(ClientName, Router, Servers) -> 

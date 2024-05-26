@@ -37,3 +37,6 @@ compileS:
 
 cleanS:
 	rm -f server.beam || true
+
+clean: cleanS cleanR cleanC
+	rm *.dump

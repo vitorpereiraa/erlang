@@ -6,14 +6,16 @@ start([Topic, Router]) ->
     spawn(fun() -> server_monitor(Topic, Router, ServerPid) end).
 
 server_monitor(Topic, Router, ServerPid) ->
-    io:format("Server monitor ~w starting to monitor pid ~w~n", [self(), ServerPid]),
+    io:format("Monitor ~w starting to monitor pid ~w~n", [self(), ServerPid]),
+    connect_with_router(Router, 3),
+    {router, Router} ! {link_server_monitor, Topic, Router, self(), ServerPid},
     process_flag(trap_exit, true),
     link(ServerPid),
     receive 
         {'EXIT', Pid, Reason} ->
             io:format("Server ~w died because it was ~w~n", [Pid, Reason]),
-            ServerPid = spawn(fun() -> start_server(Topic, Router) end),
-            server_monitor(Topic, Router, ServerPid)
+            NewPid = spawn(fun() -> start_server(Topic, Router) end),
+            server_monitor(Topic, Router, NewPid)
     end.
 
 start_server(Topic, Router) ->
@@ -21,38 +23,51 @@ start_server(Topic, Router) ->
     connect_with_router(Router, 3),
     add_server_to_router(Router, Topic),
     process_flag(trap_exit, true),
-    listen(Topic, []).
+    listen(Router,Topic, [], []).
 
-listen(Topic, Clients) -> 
+listen(Router, Topic, Clients, Refs) -> 
     receive
         {add_client, Client} ->
-            link(Client),
-            UpdatedClients = [Client|Clients],
+            Ref = monitor(process, Client),
+            UpdatedClients = [Client |Clients],
+            UpdatedRefs = [{Client, Ref}| Refs],
             Client ! {self(), ok},
             io:format("Client ~w joined.~n",[Client]),
-            listen(Topic, UpdatedClients);
+            listen(Router,Topic, UpdatedClients, UpdatedRefs);
 
         {remove_client, Client} ->
-            unlink(Client),
-            UpdatedClients = lists:delete(Client, Clients),
-            Client ! {self(), ok},
-            io:format("Client ~w left.~n",[Client]),
-            listen(Topic, UpdatedClients);
-
+            FindRef = lists:filter(fun({C, _}) -> C =:= Client end, Refs),
+            case FindRef of 
+                [] -> listen(Router,Topic, Clients, Refs);
+                [{_, Ref}] -> 
+                    demonitor(Ref),
+                    UpdatedClients = lists:delete(Client, Clients),
+                    UpdatedRefs = lists:delete({Client, Ref}, Refs),
+                    Client ! {self(), ok},
+                    io:format("Client ~w left.~n",[Client]),
+                    listen(Router,Topic, UpdatedClients, UpdatedRefs)
+            end; 
+                
         {list_clients, Client} -> 
             Client ! {self(), Clients},
             io:format("List clients request, sent: ~w.~n",[Clients]),
-            listen(Topic, Clients);
+            listen(Router,Topic, Clients, Refs);
 
         {message, Client, ClientName, Message} -> 
             io:format("[~w with pid ~w] sent '~s'~n", [ClientName, Client, Message]),
             lists:foreach(fun(C) -> C ! {message, Topic, ClientName, Message} end, Clients),
-            listen(Topic, Clients);
+            listen(Router,Topic, Clients, Refs);
+
+        {spawn_monitor} ->
+            io:format("spawn monitor request received from router~n"),
+            ServerPid = self(),
+            spawn(fun() -> server_monitor(Topic, Router, ServerPid) end),
+            listen(Router, Topic, Clients, Refs);
 
         {'EXIT', Client, _ } -> 
             UpdatedClients = lists:delete(Client, Clients),
             io:format("Client ~w was removed due to exit signal.~n",[Client]),
-            listen(Topic, UpdatedClients)
+            listen(Router,Topic, UpdatedClients, Refs)
     end.
 
 add_server_to_router(Router, Topic) ->
